@@ -73,6 +73,26 @@ export class OrderInMemoryRepository implements IOrderRepository {
     const index = this.orders.findIndex((o) => o.id === id);
     if (index === -1) return Promise.resolve(false);
     this.orders.splice(index, 1);
+    // Also remove associated items
+    this.orderItems = this.orderItems.filter((item) => item.orderId !== id);
     return Promise.resolve(true);
+  }
+
+  replaceItems(
+    orderId: string,
+    items: Omit<OrderItem, 'orderId'>[],
+  ): Promise<OrderItem[]> {
+    // Remove existing items for this order
+    this.orderItems = this.orderItems.filter(
+      (item) => item.orderId !== orderId,
+    );
+
+    // Add new items
+    const newItems: OrderItem[] = items.map((item) => ({
+      ...item,
+      orderId,
+    }));
+    this.orderItems.push(...newItems);
+    return Promise.resolve(newItems);
   }
 }

@@ -6,6 +6,7 @@ import {
   DashboardResponseDto,
   OrderTimeSeriesDto,
 } from './dto/dashboard-response.dto';
+import { Order } from 'src/order/entities/order.entity';
 
 @Injectable()
 export class DashboardService {
@@ -34,11 +35,16 @@ export class DashboardService {
     const allOrders = await this.orderService.findAllWithItems();
     const allProductCosts = await this.productService.findAllProductCosts();
 
+    this.logger.debug(`Total orders fetched: ${allOrders.length}`, allOrders);
+    this.logger.debug(`Total product costs fetched: ${allProductCosts.length}`);
+
     // Filtrar pedidos pelo período
     const filteredOrders = allOrders.filter((order) => {
       const orderDate = new Date(order.createdAt);
       return orderDate >= startDate && orderDate <= endDate;
     });
+
+    this.logger.debug(`Orders after date filtering: ${filteredOrders.length}`);
 
     // Calcular métricas consolidadas
     const totalOrders = filteredOrders.length;
@@ -91,7 +97,7 @@ export class DashboardService {
   }
 
   private generateTimeSeries(
-    orders: any[],
+    orders: Order[],
     startDate: Date,
     endDate: Date,
   ): OrderTimeSeriesDto[] {

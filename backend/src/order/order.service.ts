@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import type { OrderItem } from './entities/order.entity';
 import type { IOrderRepository } from './repositories/order.repository.interface';
 import { ORDER_REPOSITORY } from './repositories/order.repository.interface';
 import type { IClientRepository } from '../client/repositories/client.repository.interface';
@@ -82,7 +83,10 @@ export class OrderService {
     return { message: 'Order deleted successfully' };
   }
 
-  async upsertByExternalId(createOrderDto: CreateOrderDto) {
+  async upsertByExternalId(
+    createOrderDto: CreateOrderDto,
+    items?: Omit<OrderItem, 'orderId'>[],
+  ) {
     const existingOrder = await this.orderRepository.findByExternalId(
       createOrderDto.externalId,
     );
@@ -97,6 +101,12 @@ export class OrderService {
           `Failed to update order with externalId ${createOrderDto.externalId}`,
         );
       }
+
+      // Replace items if provided
+      if (items && items.length > 0) {
+        await this.orderRepository.replaceItems(updatedOrder.id, items);
+      }
+
       return updatedOrder;
     }
 
@@ -111,6 +121,13 @@ export class OrderService {
     }
 
     // Create new order
-    return await this.orderRepository.create(createOrderDto);
+    const order = await this.orderRepository.create(createOrderDto);
+
+    // Add items if provided
+    if (items && items.length > 0) {
+      await this.orderRepository.replaceItems(order.id, items);
+    }
+
+    return order;
   }
 }

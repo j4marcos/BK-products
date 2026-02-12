@@ -15,8 +15,18 @@ export class DashboardController {
     description:
       'Retorna métricas consolidadas (pedidos, faturamento, custo, lucro) e série temporal de pedidos para gráfico',
   })
-  @ApiQuery({ name: 'startDate', required: false, type: String, description: 'Data de início (formato ISO)' })
-  @ApiQuery({ name: 'endDate', required: false, type: String, description: 'Data de fim (formato ISO)' })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    type: String,
+    description: 'Data de início (formato ISO)',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    type: String,
+    description: 'Data de fim (formato ISO)',
+  })
   @ApiResponse({
     status: 200,
     description: 'Dados da dashboard retornados com sucesso',

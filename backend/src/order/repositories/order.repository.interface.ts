@@ -1,4 +1,4 @@
-import { Order } from '../entities/order.entity';
+import { Order, OrderItem } from '../entities/order.entity';
 
 export interface IOrderRepository {
   create(order: Omit<Order, 'id' | 'createdAt' | 'updatedAt'>): Promise<Order>;
@@ -10,6 +10,10 @@ export interface IOrderRepository {
   findByClientId(clientId: string): Promise<Order[]>;
   update(id: string, order: Partial<Order>): Promise<Order | null>;
   delete(id: string): Promise<boolean>;
+  replaceItems(
+    orderId: string,
+    items: Omit<OrderItem, 'orderId'>[],
+  ): Promise<OrderItem[]>;
 }
 
 export const ORDER_REPOSITORY = Symbol('ORDER_REPOSITORY');

@@ -41,11 +41,21 @@ export class WebhookService {
 
       this.logger.log(`Products processed: ${products.length} items`);
 
-      // 3. Upsert order
-      const order = await this.orderService.upsertByExternalId({
-        externalId: payload.id,
-        clientId: client.id,
-      });
+      // 3. Map lineItems to OrderItems
+      const orderItems = payload.lineItems.map((item, index) => ({
+        productId: products[index]!.id,
+        externalId: item.itemId,
+        price: item.unitPrice * item.qty,
+      }));
+
+      // 4. Upsert order with items
+      const order = await this.orderService.upsertByExternalId(
+        {
+          externalId: payload.id,
+          clientId: client.id,
+        },
+        orderItems,
+      );
 
       if (!order) {
         throw new BadRequestException('Failed to create or update order');
