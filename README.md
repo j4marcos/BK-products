@@ -228,28 +228,6 @@ O frontend sobe em `http://localhost:5173`.
 
 ---
 
-### 🖥️ Localmente + Seed
-
-O seed popula o sistema com dados de exemplo (20 clientes, 15 produtos, N pedidos).
-
-```bash
-cd backend
-npm install
-npm run seed          # 50 pedidos (padrão)
-npm run seed:100      # 100 pedidos
-npm run seed:500      # 500 pedidos
-```
-
-Após o seed, inicie normalmente:
-
-```bash
-npm run start:dev
-```
-
-> **Nota:** Os dados ficam em memória. O seed roda como processo separado que encerra após popular. Ao iniciar `start:dev`, os dados do seed **não persistem** (o servidor inicia com dados vazios). Para ter dados, envie webhooks ou use o seed e integre via mesma instância.
-
----
-
 ### 🐳 Docker (produção)
 
 ```bash
@@ -266,21 +244,6 @@ O Nginx do frontend faz proxy reverso: requisições em `/api/*` são redirecion
 
 ---
 
-### 🐳 Docker + Seed
-
-```bash
-# Primeiro, suba os containers
-docker compose up --build -d
-
-# Execute o seed dentro do container do backend
-docker exec bk-backend node dist/seed.js
-
-# Ou com quantidade customizada
-docker exec -e SEED_COUNT=200 bk-backend node dist/seed.js
-```
-
----
-
 ## Estrutura do Projeto
 
 ```
@@ -291,7 +254,6 @@ BK-products/
 │   ├── package.json
 │   └── src/
 │       ├── main.ts                    # Bootstrap + Swagger setup
-│       ├── seed.ts                    # Script de seed de dados
 │       ├── app.module.ts              # Módulo raiz
 │       ├── webhook/                   # Ingestão de pedidos externos
 │       │   ├── webhook.controller.ts
