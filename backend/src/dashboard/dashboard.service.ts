@@ -35,8 +35,8 @@ export class DashboardService {
     const allOrders = await this.orderService.findAllWithItems();
     const allProductCosts = await this.productService.findAllProductCosts();
 
-    this.logger.debug(`Total orders fetched: ${allOrders.length}`, allOrders);
-    this.logger.debug(`Total product costs fetched: ${allProductCosts.length}`);
+    // this.logger.debug(`Total orders fetched: ${allOrders.length}`, allOrders);
+    // this.logger.debug(`Total product costs fetched: ${allProductCosts.length}`);
 
     // Filtrar pedidos pelo período
     const filteredOrders = allOrders.filter((order) => {
@@ -44,7 +44,7 @@ export class DashboardService {
       return orderDate >= startDate && orderDate <= endDate;
     });
 
-    this.logger.debug(`Orders after date filtering: ${filteredOrders.length}`);
+    // this.logger.debug(`Orders after date filtering: ${filteredOrders.length}`);
 
     // Calcular métricas consolidadas
     const totalOrders = filteredOrders.length;

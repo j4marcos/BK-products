@@ -14,14 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Eye } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { getOrdersWithItems, getClients } from "@/api/client";
 import type { OrderResponse, ClientResponse } from "@/api/types";
 import { formatCurrency, formatDate } from "@/lib/utils";
@@ -32,9 +25,19 @@ export function OrdersSection() {
     new Map(),
   );
   const [loading, setLoading] = useState(true);
-  const [selectedOrder, setSelectedOrder] = useState<OrderResponse | null>(
-    null,
-  );
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+
+  const toggleExpanded = (id: string) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -77,136 +80,114 @@ export function OrdersSection() {
   };
 
   return (
-    <>
-      <Card>
-        <CardHeader>
-          <CardTitle>Pedidos Recentes</CardTitle>
-          <CardDescription>
-            Últimos pedidos recebidos via webhook
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="space-y-3">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div
-                  key={i}
-                  className="h-12 animate-pulse rounded bg-muted"
-                />
-              ))}
-            </div>
-          ) : orders.length === 0 ? (
-            <p className="py-8 text-center text-muted-foreground">
-              Nenhum pedido encontrado
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Pedido</TableHead>
-                  <TableHead>Cliente</TableHead>
-                  <TableHead>Data</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                  <TableHead className="w-12" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {orders.map((order) => (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-medium">
-                      {order.externalId}
-                    </TableCell>
-                    <TableCell>{getClientName(order.clientId)}</TableCell>
-                    <TableCell>{formatDate(order.createdAt)}</TableCell>
-                    <TableCell className="text-right">
-                      {formatCurrency(getOrderTotal(order))}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setSelectedOrder(order)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+    <Card>
+      <CardHeader>
+        <CardTitle>Pedidos Recentes</CardTitle>
+        <CardDescription>
+          Últimos pedidos recebidos via webhook
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="space-y-3">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div
+                key={i}
+                className="h-12 animate-pulse rounded bg-muted"
+              />
+            ))}
+          </div>
+        ) : orders.length === 0 ? (
+          <p className="py-8 text-center text-muted-foreground">
+            Nenhum pedido encontrado
+          </p>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-10" />
+                <TableHead>Pedido</TableHead>
+                <TableHead>Cliente</TableHead>
+                <TableHead>Data</TableHead>
+                <TableHead className="text-right">Total</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {orders.map((order) => {
+                const isExpanded = expandedIds.has(order.id);
+                const hasItems = order.items && order.items.length > 0;
 
-      {/* Order Detail Dialog */}
-      <Dialog
-        open={!!selectedOrder}
-        onOpenChange={(open) => !open && setSelectedOrder(null)}
-      >
-        <DialogContent onClose={() => setSelectedOrder(null)}>
-          <DialogHeader>
-            <DialogTitle>
-              Detalhes do Pedido {selectedOrder?.externalId}
-            </DialogTitle>
-          </DialogHeader>
-          {selectedOrder && (
-            <div className="mt-4 space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-muted-foreground">Cliente:</span>
-                  <p className="font-medium">
-                    {getClientName(selectedOrder.clientId)}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Data:</span>
-                  <p className="font-medium">
-                    {formatDate(selectedOrder.createdAt)}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">ID Externo:</span>
-                  <p className="font-medium">{selectedOrder.externalId}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Total:</span>
-                  <p className="font-medium">
-                    {formatCurrency(getOrderTotal(selectedOrder))}
-                  </p>
-                </div>
-              </div>
+                return (
+                  <>
+                    <TableRow
+                      key={order.id}
+                      className={`cursor-pointer ${hasItems ? "hover:bg-muted/50" : ""} ${isExpanded ? "border-b-0" : ""}`}
+                      onClick={() => hasItems && toggleExpanded(order.id)}
+                    >
+                      <TableCell className="w-10 pr-0">
+                        {hasItems ? (
+                          isExpanded ? (
+                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                          )
+                        ) : null}
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {order.externalId}
+                      </TableCell>
+                      <TableCell>{getClientName(order.clientId)}</TableCell>
+                      <TableCell>{formatDate(order.createdAt)}</TableCell>
+                      <TableCell className="text-right">
+                        {formatCurrency(getOrderTotal(order))}
+                      </TableCell>
+                    </TableRow>
 
-              {selectedOrder.items && selectedOrder.items.length > 0 && (
-                <div>
-                  <h4 className="mb-2 text-sm font-semibold">Itens</h4>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>ID Produto</TableHead>
-                        <TableHead>ID Externo</TableHead>
-                        <TableHead className="text-right">Preço</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {selectedOrder.items.map((item, idx) => (
-                        <TableRow key={idx}>
-                          <TableCell className="font-mono text-xs">
-                            {item.productId}
-                          </TableCell>
-                          <TableCell>{item.externalId}</TableCell>
-                          <TableCell className="text-right">
-                            {formatCurrency(item.price)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </>
+                    {isExpanded && hasItems && (
+                      <tr key={`${order.id}-items`}>
+                        <td colSpan={5} className="p-0">
+                          <div className="border-b bg-muted/30 px-6 py-3">
+                            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                              Itens do pedido
+                            </p>
+                            <Table>
+                              <TableHeader>
+                                <TableRow className="hover:bg-transparent">
+                                  <TableHead className="text-xs">ID Externo</TableHead>
+                                  <TableHead className="text-xs">ID Produto</TableHead>
+                                  <TableHead className="text-right text-xs">Preço</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {order.items!.map((item, idx) => (
+                                  <TableRow
+                                    key={idx}
+                                    className="hover:bg-transparent"
+                                  >
+                                    <TableCell className="py-2 text-sm">
+                                      {item.externalId}
+                                    </TableCell>
+                                    <TableCell className="py-2 font-mono text-xs text-muted-foreground">
+                                      {item.productId}
+                                    </TableCell>
+                                    <TableCell className="py-2 text-right text-sm">
+                                      {formatCurrency(item.price)}
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </>
+                );
+              })}
+            </TableBody>
+          </Table>
+        )}
+      </CardContent>
+    </Card>
   );
 }
