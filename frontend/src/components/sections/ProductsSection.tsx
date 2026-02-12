@@ -113,7 +113,7 @@ export function ProductsSection() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Produtos</CardTitle>
+            <CardTitle>Produtos e Custos</CardTitle>
             <Button onClick={() => setDialogOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
               Novo
