@@ -236,7 +236,7 @@ docker compose up --build
 
 | Serviço       | URL                          |
 | ------------- | ---------------------------- |
-| Frontend      | `http://localhost:80`        |
+| Frontend      | `http://localhost:8080`      |
 | Backend (API) | `http://localhost:3000`      |
 | Swagger Docs  | `http://localhost:3000/docs` |
 
