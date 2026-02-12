@@ -60,8 +60,30 @@ export class ProductService {
     return await this.productCostRepository.findAll();
   }
 
+  async findAllProductsWithCost() {
+    const products = await this.productRepository.findAll();
+    const costs = await this.productCostRepository.findAll();
+
+    const costMap = new Map(costs.map((c) => [c.id, c]));
+
+    return products.map((product) => ({
+      ...product,
+      cost: product.productCostId
+        ? (costMap.get(product.productCostId) ?? null)
+        : null,
+    }));
+  }
+
   async findOneProductCost(id: string) {
     const productCost = await this.productCostRepository.findById(id);
+    if (!productCost) {
+      throw new NotFoundException(`Product cost with ID ${id} not found`);
+    }
+    return productCost;
+  }
+
+  async updateProductCost(id: string, updateDto: CreateProductCostDto) {
+    const productCost = await this.productCostRepository.update(id, updateDto);
     if (!productCost) {
       throw new NotFoundException(`Product cost with ID ${id} not found`);
     }

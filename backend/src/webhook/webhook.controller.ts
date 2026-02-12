@@ -19,9 +19,10 @@ export class WebhookController {
 
   @Post('external-order')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Recebe webhook de pedidos de plataforma externa',
-    description: 'Endpoint para processar webhooks de pedidos de sistemas externos'
+    description:
+      'Endpoint para processar webhooks de pedidos de sistemas externos',
   })
   @ApiBody({ type: CreateWebhookDto })
   @ApiResponse({
@@ -32,8 +33,8 @@ export class WebhookController {
       properties: {
         success: { type: 'boolean' },
         message: { type: 'string' },
-      }
-    }
+      },
+    },
   })
   @ApiResponse({
     status: 400,
