@@ -45,15 +45,15 @@ Nenhum service, controller ou lógica de domínio precisa ser alterado.
 
 Módulos de alto nível (services) **não dependem de módulos de baixo nível** (repositórios concretos). Ambos dependem de **abstrações**:
 
-```
-┌─────────────┐       ┌──────────────────────┐       ┌──────────────────────────┐
-│  Controller  │──────▶│      Service          │──────▶│   IRepository (interface)│
-└─────────────┘       └──────────────────────┘       └──────────┬───────────────┘
-                                                                │ implements
-                                                     ┌──────────▼───────────────┐
-                                                     │  InMemoryRepository      │
-                                                     │  (ou PostgresRepo, etc.) │
-                                                     └──────────────────────────┘
+```mermaid
+graph LR
+    Controller -->|depende| Service
+    Service -->|depende| IRepository[IRepository interface]
+    InMemoryRepository[InMemoryRepository<br/>ou PostgresRepo, etc.]
+    IRepository -.implements.- InMemoryRepository
+    
+    style IRepository fill:#e1f5ff,stroke:#0066cc
+    style InMemoryRepository fill:#fff4e6,stroke:#ff9800
 ```
 
 Os services recebem repositórios via `@Inject(SYMBOL)` — nunca instanciam diretamente. O NestJS resolve a dependência em tempo de execução pelo token registrado no módulo.
@@ -62,16 +62,20 @@ Os services recebem repositórios via `@Inject(SYMBOL)` — nunca instanciam dir
 
 O `WebhookService` atua como **mapper/adapter** entre o formato externo da plataforma e as entidades de domínio. O DTO `CreateWebhookDto` define o contrato de entrada com validação via `class-validator`, enquanto internamente o serviço traduz para chamadas dos services de domínio (`ClientService`, `ProductService`, `OrderService`):
 
-```
-Plataforma Externa  ──POST──▶  WebhookController
-                                     │
-                              CreateWebhookDto (validação)
-                                     │
-                               WebhookService (mapper)
-                              ┌──────┼──────┐
-                              ▼      ▼      ▼
-                          Client  Product  Order
-                          Service Service  Service
+```mermaid
+graph TD
+    A[Plataforma Externa] -->|POST| B[WebhookController]
+    B --> C[CreateWebhookDto<br/>validação]
+    C --> D[WebhookService<br/>mapper]
+    D --> E[ClientService]
+    D --> F[ProductService]
+    D --> G[OrderService]
+    
+    style C fill:#fff4e6,stroke:#ff9800
+    style D fill:#e8f5e9,stroke:#4caf50
+    style E fill:#e3f2fd,stroke:#2196f3
+    style F fill:#e3f2fd,stroke:#2196f3
+    style G fill:#e3f2fd,stroke:#2196f3
 ```
 
 Para suportar um **novo formato de plataforma**, basta:
@@ -169,27 +173,51 @@ Isso garante que **qualquer alteração nos DTOs do backend** se propague automa
 
 ## Entidades
 
-```
-┌────────── ┐       ┌──────────────┐       ┌──────────┐
-│  Client   │◄──────│    Order     │─────▶│ OrderItem│
-│           │ 1:N   │              │ 1:N   │          │
-│ id        │       │ id           │       │ productId│
-│ name      │       │ externalId   │       │ externalId│
-│ email (PK)│       │ clientId     │       │ orderId  │
-│ createdAt │       │ createdAt    │       │ price    │
-│ updatedAt │       │ updatedAt    │       └──────────┘
-└────────── ┘       └──────────────┘
-
-┌──────────┐       ┌──────────────┐
-│ Product  │─────▶│ ProductCost  │
-│          │ N:1   │              │
-│ id       │       │ id           │
-│ externalId│      │ cost         │
-│ name     │       │ createdAt    │
-│ productCostId│   │ updatedAt    │
-│ createdAt│       └──────────────┘
-│ updatedAt│
-└──────────┘
+```mermaid
+erDiagram
+    CLIENT ||--o{ ORDER : places
+    ORDER ||--|{ ORDER_ITEM : contains
+    PRODUCT ||--o{ ORDER_ITEM : references
+    PRODUCT }o--|| PRODUCT_COST : has
+    
+    CLIENT {
+        string id PK
+        string name
+        string email UK
+        datetime createdAt
+        datetime updatedAt
+    }
+    
+    ORDER {
+        string id PK
+        string externalId UK
+        string clientId FK
+        datetime createdAt
+        datetime updatedAt
+    }
+    
+    ORDER_ITEM {
+        string productId FK
+        string externalId
+        string orderId FK
+        float price
+    }
+    
+    PRODUCT {
+        string id PK
+        string externalId UK
+        string name
+        string productCostId FK
+        datetime createdAt
+        datetime updatedAt
+    }
+    
+    PRODUCT_COST {
+        string id PK
+        float cost
+        datetime createdAt
+        datetime updatedAt
+    }
 ```
 
 ---
