@@ -52,8 +52,10 @@ graph LR
     InMemoryRepository[InMemoryRepository<br/>ou PostgresRepo, etc.]
     IRepository -.implements.- InMemoryRepository
     
-    style IRepository fill:#e1f5ff,stroke:#0066cc
-    style InMemoryRepository fill:#fff4e6,stroke:#ff9800
+    style IRepository fill:#4fc3f7,stroke:#01579b,stroke-width:3px,color:#000
+    style InMemoryRepository fill:#ffb74d,stroke:#e65100,stroke-width:3px,color:#000
+    style Controller fill:#81c784,stroke:#1b5e20,stroke-width:3px,color:#000
+    style Service fill:#f06292,stroke:#880e4f,stroke-width:3px,color:#000
 ```
 
 Os services recebem repositórios via `@Inject(SYMBOL)` — nunca instanciam diretamente. O NestJS resolve a dependência em tempo de execução pelo token registrado no módulo.
@@ -71,11 +73,13 @@ graph TD
     D --> F[ProductService]
     D --> G[OrderService]
     
-    style C fill:#fff4e6,stroke:#ff9800
-    style D fill:#e8f5e9,stroke:#4caf50
-    style E fill:#e3f2fd,stroke:#2196f3
-    style F fill:#e3f2fd,stroke:#2196f3
-    style G fill:#e3f2fd,stroke:#2196f3
+    style A fill:#ff8a65,stroke:#bf360c,stroke-width:3px,color:#000
+    style B fill:#ce93d8,stroke:#4a148c,stroke-width:3px,color:#000
+    style C fill:#ffb74d,stroke:#e65100,stroke-width:3px,color:#000
+    style D fill:#81c784,stroke:#1b5e20,stroke-width:3px,color:#000
+    style E fill:#4fc3f7,stroke:#01579b,stroke-width:3px,color:#000
+    style F fill:#4fc3f7,stroke:#01579b,stroke-width:3px,color:#000
+    style G fill:#4fc3f7,stroke:#01579b,stroke-width:3px,color:#000
 ```
 
 Para suportar um **novo formato de plataforma**, basta:
